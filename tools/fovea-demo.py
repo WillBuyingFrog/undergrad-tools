@@ -15,7 +15,7 @@ def foveation(img):
     left_up = (center[0] - fovea_half[0], center[1] - fovea_half[1])
     right_down = (center[0] + fovea_half[0], center[1] + fovea_half[1])
     
-    processed_image = cv2.GaussianBlur(img, (37, 37), 0)
+    processed_image = cv2.GaussianBlur(img, (17, 17), 0)
     processed_image[left_up[1]:right_down[1], left_up[0]:right_down[0]] = img[left_up[1]:right_down[1], left_up[0]:right_down[0]]
 
     return processed_image
@@ -31,9 +31,16 @@ def foveation_demo(mot_path):
     # mot_path是一个文件夹，里面有该样本下的每一帧，以图片形式储存
     
     parent_directory = os.path.abspath(os.path.join(mot_path, os.pardir))
-    foveation_directory = os.path.join(parent_directory, 'static_foveation')
+    foveation_directory = os.path.join(parent_directory, 'img1')
     print(foveation_directory)
     counter = 0
+
+    print(f'Processed path is {mot_path}')
+    print(f'Results stored into {foveation_directory}')
+    # if foveation_directory does not exist yet, create the directory
+    if not os.path.exists(foveation_directory):
+        os.makedirs(foveation_directory)
+        print('Created directory for foveation results')
 
     for roots, dirs, files in os.walk(mot_path):
         for file in files:
@@ -41,12 +48,14 @@ def foveation_demo(mot_path):
             img = foveation(img)
             cv2.imwrite(os.path.join(foveation_directory, file), img)
             counter += 1
+            if counter % 20 == 0:
+                print(f'Processed {counter} images')
         #     if counter >= 2:
         #         break
         # if counter >= 2:
         #     break
 
-
+    
 
 
 
@@ -54,6 +63,6 @@ def foveation_demo(mot_path):
 
 if __name__ == '__main__':
 
-    mot_path = 'D:\\Frog\\Thesis\\undergrad\\dataset\\MOT15\\test\\KITTI-16\\img1'
+    mot_path = '/home/aa/frog/undergrad/datasets/MOT15-Fair/images/train/KITTI-13/img0'
 
     foveation_demo(mot_path)
