@@ -180,7 +180,7 @@ if __name__ == '__main__':
                       TUD-Campus
                       TUD-Stadtmitte'''
         #seqs_str = '''TUD-Campus'''
-        data_root = os.path.join(opt.data_dir, 'MOT15/images/train')
+        data_root = os.path.join(opt.data_dir, 'MOT15-Fair/images/train')
     else:
         seqs_str = '''MOT16-02
                       MOT16-04
@@ -262,10 +262,12 @@ if __name__ == '__main__':
         data_root = os.path.join(opt.data_dir, 'MOT20/images/test')
     seqs = [seq.strip() for seq in seqs_str.split()]
 
+    print(f'Data root is {data_root}')
+
     main(opt,
          data_root=data_root,
          seqs=seqs,
          exp_name='MOT17_test_public_dla34',
          show_image=False,
          save_images=False,
-         save_videos=False)
+         save_videos=True)
