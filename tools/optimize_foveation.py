@@ -190,9 +190,10 @@ if __name__ == '__main__':
             x, y, current_score = simulated_annealing(tlwhs, fovea_width, fovea_height, img_width, img_height,
                                        init_x=210, init_y=210)
             results.append((x, y, current_score))
-            print(f'Epoch {i+1} - Simulated annealing result x={x}, y={y}')
-            if i % 5 == 0:
-                visualize_ann_result(tlwhs, x, y, fovea_width, fovea_height, img_width, img_height, save_path='results/', img_name=f'test_{i}.jpg',)
+            # print(f'Epoch {i+1} - Simulated annealing result x={x}, y={y}')
+            if (i + 1) % 5 == 0:
+                visualize_ann_result(tlwhs, x, y, fovea_width, fovea_height, img_width, img_height,
+                                      save_path='results/', img_name=f'test_{i + 1}.jpg',)
 
         
         # 按照每个轮次返回的score进行加权平均
@@ -201,8 +202,10 @@ if __name__ == '__main__':
             avg_x += x * score
             avg_y += y * score
             total_score += score
-        avg_x /= (args.exp_epochs * total_score)
-        avg_y /= (args.exp_epochs * total_score)
+            print(f'Epoch {i+1} - Simulated annealing result x={x}, y={y}, score={score:.2f}')
+            print(f'      avg_x={avg_x:.2f}, avg_y={avg_y:.2f}, total_score={total_score:.2f}')
+        avg_x /= (total_score)
+        avg_y /= (total_score)
 
         print(f'Average position: x={avg_x:.2f}, y={avg_y:.2f}')
         visualize_ann_result(tlwhs, avg_x, avg_y, fovea_width, fovea_height, img_width, img_height, save_path='results/', img_name=f'test_avg.jpg',)
