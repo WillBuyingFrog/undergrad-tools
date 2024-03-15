@@ -18,9 +18,12 @@ from tracking_utils.log import logger
 from tracking_utils.timer import Timer
 from tracking_utils.evaluation import Evaluator
 import datasets.dataset.jde as datasets
-
+from frog.optimize_location import optimize
 from tracking_utils.utils import mkdir_if_missing
 from opts import opts
+
+
+FOVEA_OPTIMIZE = False
 
 
 def write_results(filename, results, data_type):
@@ -99,6 +102,26 @@ def eval_seq(opt, dataloader, data_type, result_filename, save_dir=None, show_im
                 online_tlwhs.append(tlwh)
                 online_ids.append(tid)
                 #online_scores.append(t.score)
+        
+        if frame_id % 20 == 0:
+            print(f'Example of tlwhs values: {online_tlwhs[0][:5]}')
+            print(f'FOVEA_OPTIMIZE value is {FOVEA_OPTIMIZE}')
+        
+        if opt.fovea_optimize:
+            # Frog undergrad thesis algorithm settings
+            img_height, img_width = img0.shape[:2]
+            fovea_width = img_width // 2
+            fovea_height = img_height // 2
+            init_x, init_y = img_width // 2, img_height // 2
+            epochs = 6
+            algo = 'annealing'
+            visualize = True
+            visualize_path = '../results'
+            fovea_x, fovea_y = optimize(online_tlwhs, fovea_width, fovea_height, img_width, img_height,
+                                   init_x=init_x, init_y=init_y, epochs=epochs, algo=algo,
+                                   visualize=visualize, visualize_path=visualize_path)
+            print(f'Optimized position: x={fovea_x:.2f}, y={fovea_y:.2f}')
+            
         timer.toc()
         # save results
         results.append((frame_id + 1, online_tlwhs, online_ids))
@@ -124,6 +147,12 @@ def main(opt, data_root='/data/MOT16/train', det_root=None, seqs=('MOT16-05',), 
     mkdir_if_missing(result_root)
     data_type = 'mot'
 
+    # Frog undergrad thesis algorithm settings
+    global FOVEA_OPTIMIZE
+    FOVEA_OPTIMIZE= opt.fovea_optimize
+    if FOVEA_OPTIMIZE:
+        logger.info(f'[Frog] Fovea optimization is enabled')
+    
     # run tracking
     accs = []
     n_frame = 0

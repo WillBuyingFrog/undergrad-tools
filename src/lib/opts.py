@@ -9,6 +9,11 @@ import sys
 class opts(object):
   def __init__(self):
     self.parser = argparse.ArgumentParser()
+
+    # Frog undergrad experiment settings
+    self.parser.add_argument('--fovea_optimize', default=False, help='optimize fovea region location')
+
+
     # basic experiment setting
     self.parser.add_argument('task', default='mot', help='mot')
     self.parser.add_argument('--dataset', default='jde', help='jde')
