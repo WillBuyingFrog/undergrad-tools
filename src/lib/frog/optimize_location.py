@@ -3,8 +3,8 @@ import argparse
 import random
 import math
 import os
-from frogutils.logger import Logger
-from frogutils.visualize import visualize_ann_result
+from utils.logger import Logger
+from utils.visualize import visualize_ann_result
 
 
 OVERLAP_TRICK = True
@@ -61,13 +61,9 @@ def total_coverage(x, y, tlwhs, fovea_width, fovea_height):
         total += calculate_coverage(x, y, tlwh, fovea_width, fovea_height)
     return total
 
-def simulated_annealing(tlwhs, fovea_width, fovea_height, img_width, img_height,
-                         init_x=None, init_y=None,
-                         visualize_path='../results/', visualize=False):
-    if visualize:
-        logger = Logger(os.path.join(visualize_path, 'annealing_result.txt'))
-    else:
-        logger = Logger('temp.txt')
+def simulated_annealing(tlwhs, fovea_width, fovea_height, img_width, img_height, init_x=None, init_y=None):
+
+    logger = Logger('results/annealing_test.txt')
 
     # 定义初始状态
     if init_x is not None:
@@ -130,40 +126,6 @@ def simulated_annealing(tlwhs, fovea_width, fovea_height, img_width, img_height,
 
     return current_x, current_y, current_score
 
-def optimize(tlwhs, fovea_width, fovea_height, img_width, img_height,
-             init_x=None, init_y=None, epochs=1, algo='annealing',
-             visualize=False, visualize_path='../results'):
-    if algo == 'annealing':
-        avg_x, avg_y, total_score = 0, 0, 0.0
-        results = []
-        for i in range(epochs):
-            x, y, current_score = simulated_annealing(tlwhs, fovea_width, fovea_height, img_width, img_height,
-                                       init_x=init_x, init_y=init_y,
-                                       visualize=visualize, visualize_path=visualize_path)
-            results.append((x, y, current_score))
-            if visualize:
-                visualize_ann_result(tlwhs, x, y, fovea_width, fovea_height, img_width, img_height,
-                                      save_path=visualize_path, img_name=f'test_{i + 1}.jpg')
-        
-        # 按照每个轮次返回的score进行加权平均
-        for i in range(epochs):
-            x, y, score = results[i]
-            avg_x += x * score
-            avg_y += y * score
-            total_score += score
-            # print(f'Epoch {i+1} - Simulated annealing result x={x}, y={y}, score={score:.2f}')
-            # print(f'      avg_x={avg_x:.2f}, avg_y={avg_y:.2f}, total_score={total_score:.2f}')
-        avg_x /= (total_score)
-        avg_y /= (total_score)
-
-        # print(f'Average position: x={avg_x:.2f}, y={avg_y:.2f}')
-        if visualize:
-            visualize_ann_result(tlwhs, avg_x, avg_y, fovea_width, fovea_height,
-                                  img_width, img_height, save_path=visualize_path, img_name=f'test_avg.jpg',)
-        
-        return avg_x, avg_y
-    else:
-        return -1, -1
 
 if __name__ == '__main__':
 
@@ -176,7 +138,6 @@ if __name__ == '__main__':
     parser.add_argument('--fovea_height', default=300, type=int, help='中央凹区域高度')
     parser.add_argument('--exp_epochs', default=1, type=int, help='算法迭代次数')
     parser.add_argument('--clear_previous', default=True, type=bool, help='是否清除之前的可视化结果')
-    parser.add_argument('--testdata_path', default='no', type=str)
 
     args = parser.parse_args()
     img_width = args.img_width
@@ -185,7 +146,6 @@ if __name__ == '__main__':
     fovea_height = args.fovea_height
     exp_epochs = args.exp_epochs
     clear_previous = args.clear_previous
-    testdata_path = args.testdata_path
 
     if clear_previous:
         if os.path.exists('results'):
@@ -195,8 +155,6 @@ if __name__ == '__main__':
                     os.remove(os.path.join('results', file))
 
 
-
-    
     # 示例: 假设有一个目标列表
     tlwhs = [
         torch.tensor([80, 100, 35, 100]),
@@ -210,20 +168,6 @@ if __name__ == '__main__':
     ]
 
     
-    if testdata_path != 'no':
-        print(f'Loading tlwhs data from file: {testdata_path}')
-        # the tlwhs data in the testdata_path file is organized as follows:
-        # four float numbers each row, each row represents a target's tlwh
-        # top_x left_y width height
-        # for example, a testdata_path file that contains two targets should look like:
-        # 10.0 20.0 30.0 50.0
-        # 20.0 30.0 30.0 50.0
-        # now read the file and load the tlwhs data
-        tlwhs = []
-        with open(testdata_path, 'r') as f:
-            for line in f:
-                tlwhs.append(torch.tensor([float(x) for x in line.strip().split()]))
-        print(f'Loaded tlwhs: {tlwhs}')
 
     if args.algo_type == 'grad':
         # 中央凹区域的位置
@@ -244,7 +188,8 @@ if __name__ == '__main__':
         results = []
         for i in range(args.exp_epochs):
             x, y, current_score = simulated_annealing(tlwhs, fovea_width, fovea_height, img_width, img_height,
-                                       init_x=210, init_y=210)
+                                       init_x=None, init_y=None)
+            
             results.append((x, y, current_score))
             # print(f'Epoch {i+1} - Simulated annealing result x={x}, y={y}')
             if (i + 1) % 5 == 0:
