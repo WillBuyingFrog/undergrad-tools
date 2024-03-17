@@ -79,12 +79,11 @@ def eval_seq(opt, dataloader, data_type, result_filename, save_dir=None, show_im
     timer = Timer()
     results = []
     frame_id = 0
+    prev_online_tlwhs = []
 
 
     #for path, img, img0 in dataloader:
     for i, (path, img, img0) in enumerate(dataloader):
-
-        prev_online_tlwhs = []
 
         #if i % 8 != 0:
             #continue
@@ -138,13 +137,17 @@ def eval_seq(opt, dataloader, data_type, result_filename, save_dir=None, show_im
                     engram_copy = np.copy(region_detector.engram)
                     visualize_rois(blurred_img_copy, origin_img_copy, engram_copy, roi_tlwhs, 
                                    result_path='results/', file_marker=str(i))
-                    # TODO: test foveation
+            
+            # TODO 实现本帧的中央凹效果
 
                     
             else:
                 print(f'Empty tlwhs list at frame {frame_id}')
-            
-            
+        
+        if opt.fovea_optimize:
+            # 清空prev_online_tlwhs
+            prev_online_tlwhs = []
+        
         # run tracking
         timer.tic()
         if use_cuda:
@@ -162,6 +165,9 @@ def eval_seq(opt, dataloader, data_type, result_filename, save_dir=None, show_im
             if tlwh[2] * tlwh[3] > opt.min_box_area and not vertical:
                 online_tlwhs.append(tlwh)
                 online_ids.append(tid)
+                if opt.fovea_optimize:
+                    # 将本帧中得到的所有目标的锚框信息（tlwhs）加入到prev_online_tlwhs中，以便下一帧计算中央凹位置
+                    prev_online_tlwhs.append(tlwh)
                 #online_scores.append(t.score)
         
         if opt.fovea_optimize:
