@@ -16,6 +16,7 @@ class FrogROI:
         # 需要持续更新的比较基准（engram）是和current_image形状相同的numpy array，初始值全部置零
         self.engram = np.zeros((self.image_height, self.image_width, 3), dtype=np.float32)
         self.engram_factor = np.array([5, 3, 2.5, 2, 1.5, 1.25, 1, 0.75, 0.5, 0.25])
+        # self.engram_factor = np.array([10, 2.5, 1, 0.9, 0.8, 0.7, 0.6, 0.5, 0.2, 0.1])
         self.region_scale = region_scale
         self.pixel_change_threshold = pixel_change_threshold
         # 用于计算比较基准的图片
@@ -28,13 +29,17 @@ class FrogROI:
     
     def calculate_engram(self):
         num_images = len(self.engram_images)
+        factor_sum = 0.0
         for i in range(num_images):
             self.engram += self.engram_images[i] * self.engram_factor[i]
-        self.engram = self.engram / num_images
+            factor_sum += self.engram_factor[i]
+
+        self.engram = self.engram / factor_sum
     
     def conpare_engram(self, target_image,
                        visualize=False, visualize_path="results/", marker=''):
 
+        # 契合行人目标的长宽比的区域划分？
         region_w = int(self.image_width * self.region_scale)
         region_h = int(self.image_height * self.region_scale)
         num_regions_w_h = int(1 / self.region_scale)
@@ -56,13 +61,12 @@ class FrogROI:
                     # t: 该区域的起始x坐标。l: 该区域的起始y坐标。w: 该区域的宽度。h: 该区域的高度。
                     detected_regions.append((i*region_w, j*region_h, region_w, region_h))
         
-        # 如果要可视化，就在engram和原图上都画出所有探测到的区域
+        # 如果要可视化，就在图上画出所有探测到的区域
         if visualize:
             for region in detected_regions:
-                cv2.rectangle(self.engram, (region[0], region[1]), (region[0]+region[2], region[1]+region[3]), (0, 255, 0), 2)
                 cv2.rectangle(target_image, (region[0], region[1]), (region[0]+region[2], region[1]+region[3]), (0, 255, 0), 2)
-            cv2.imwrite(os.path.join(visualize_path, f"engram_{marker}.jpg"), self.engram)
-            cv2.imwrite(os.path.join(visualize_path, f"target_{marker}.jpg"), target_image)
+            cv2.imwrite(os.path.join(visualize_path, f"image_{marker}_engram.jpg"), self.engram)
+            cv2.imwrite(os.path.join(visualize_path, f"image_{marker}_target.jpg"), target_image)
         return detected_regions
     
 
