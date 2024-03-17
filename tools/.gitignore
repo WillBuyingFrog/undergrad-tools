@@ -1,5 +1,6 @@
 __pycache__/
 results/
 roi_images/
+roi_blurred_images/
 
 *.txt
