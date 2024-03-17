@@ -19,6 +19,8 @@ from tracking_utils.timer import Timer
 from tracking_utils.evaluation import Evaluator
 import datasets.dataset.jde as datasets
 from frog.optimize_location import optimize
+from frog.calculate_roi import FrogROI
+from frog.calculate_roi import blur_image, visualize_rois
 from tracking_utils.utils import mkdir_if_missing
 from opts import opts
 
@@ -77,13 +79,72 @@ def eval_seq(opt, dataloader, data_type, result_filename, save_dir=None, show_im
     timer = Timer()
     results = []
     frame_id = 0
+
+
     #for path, img, img0 in dataloader:
     for i, (path, img, img0) in enumerate(dataloader):
+
+        prev_online_tlwhs = []
+
         #if i % 8 != 0:
             #continue
         if frame_id % 20 == 0:
             logger.info('Processing frame {} ({:.2f} fps)'.format(frame_id, 1. / max(1e-5, timer.average_time)))
 
+        if opt.fovea_optimize:
+            # Frog undergrad thesis algorithm settings
+            img_height, img_width = img0.shape[:2]
+
+            if i < 1:
+                region_detector = FrogROI(image_width=img_width, image_height=img_height,
+                                          init_image_path=path, region_scale=0.025, pixel_change_threshold=150)
+                blurred_img = blur_image(img0, 37)
+                region_detector.store_engram_images_raw(blurred_img)
+            
+
+
+            fovea_width = img_width // 2
+            fovea_height = img_height // 2
+            init_x, init_y = img_width // 2, img_height // 2
+            epochs = 6
+            algo = 'annealing'
+            visualize = False
+            visualize_path = '../results'
+
+            # additional roi based on adaptation
+            if i >= 1:
+                # roi based on adaptation is only valid after the first frame
+                blurred_img = blur_image(img0, 37)
+                roi_tlwhs = region_detector.compare_engram(blurred_img.astype(np.float32))
+                if len(roi_tlwhs) > 0:
+                    # add all items in roi_tlwhs to prev_online_tlwhs
+                    for roi_tlwh in roi_tlwhs:
+                        prev_online_tlwhs.append(roi_tlwh)
+                # add this frame to engram image list
+                region_detector.store_engram_images_raw(blurred_img)
+                # calculate engram for next frame
+                region_detector.calculate_engram()
+
+
+            if len(prev_online_tlwhs) > 0:
+                fovea_x, fovea_y = optimize(prev_online_tlwhs, fovea_width, fovea_height, img_width, img_height,
+                                   init_x=init_x, init_y=init_y, epochs=epochs, algo=algo,
+                                   visualize=visualize, visualize_path=visualize_path)
+                if i % 5 == 0:
+                    print(f'Optimized position: x={fovea_x:.2f}, y={fovea_y:.2f}')
+                    # make a copy of blurred_img and region_detector.engram
+                    blurred_img_copy = np.copy(blurred_img)
+                    origin_img_copy = np.copy(img0)
+                    engram_copy = np.copy(region_detector.engram)
+                    visualize_rois(blurred_img_copy, origin_img_copy, engram_copy, roi_tlwhs, 
+                                   result_path='results/', file_marker=str(i))
+                    # TODO: test foveation
+
+                    
+            else:
+                print(f'Empty tlwhs list at frame {frame_id}')
+            
+            
         # run tracking
         timer.tic()
         if use_cuda:
@@ -103,28 +164,14 @@ def eval_seq(opt, dataloader, data_type, result_filename, save_dir=None, show_im
                 online_ids.append(tid)
                 #online_scores.append(t.score)
         
+        if opt.fovea_optimize:
+            prev_online_tlwhs = online_tlwhs
+        
         if frame_id % 20 == 0:
             print(f'Example of tlwhs values: {online_tlwhs[0][:5]}')
             print(f'FOVEA_OPTIMIZE value is {FOVEA_OPTIMIZE}')
         
-        if opt.fovea_optimize:
-            # Frog undergrad thesis algorithm settings
-            img_height, img_width = img0.shape[:2]
-            fovea_width = img_width // 2
-            fovea_height = img_height // 2
-            init_x, init_y = img_width // 2, img_height // 2
-            epochs = 6
-            algo = 'annealing'
-            visualize = False
-            visualize_path = '../results'
-            if len(online_tlwhs) > 0:
-                fovea_x, fovea_y = optimize(online_tlwhs, fovea_width, fovea_height, img_width, img_height,
-                                   init_x=init_x, init_y=init_y, epochs=epochs, algo=algo,
-                                   visualize=visualize, visualize_path=visualize_path)
-            else:
-                print(f'Empty tlwhs list at frame {frame_id}')
-            if i % 5 == 0:
-                print(f'Optimized position: x={fovea_x:.2f}, y={fovea_y:.2f}')
+        
             
         timer.toc()
         # save results
