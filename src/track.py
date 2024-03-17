@@ -115,12 +115,16 @@ def eval_seq(opt, dataloader, data_type, result_filename, save_dir=None, show_im
             init_x, init_y = img_width // 2, img_height // 2
             epochs = 6
             algo = 'annealing'
-            visualize = True
+            visualize = False
             visualize_path = '../results'
-            fovea_x, fovea_y = optimize(online_tlwhs, fovea_width, fovea_height, img_width, img_height,
+            if len(online_tlwhs) > 0:
+                fovea_x, fovea_y = optimize(online_tlwhs, fovea_width, fovea_height, img_width, img_height,
                                    init_x=init_x, init_y=init_y, epochs=epochs, algo=algo,
                                    visualize=visualize, visualize_path=visualize_path)
-            print(f'Optimized position: x={fovea_x:.2f}, y={fovea_y:.2f}')
+            else:
+                print(f'Empty tlwhs list at frame {frame_id}')
+            if i % 5 == 0:
+                print(f'Optimized position: x={fovea_x:.2f}, y={fovea_y:.2f}')
             
         timer.toc()
         # save results
