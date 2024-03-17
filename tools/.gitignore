@@ -2,5 +2,6 @@ __pycache__/
 results/
 roi_images/
 roi_blurred_images/
+fovea_images/
 
 *.txt
