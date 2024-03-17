@@ -5,20 +5,17 @@ import os
 
 from frogutils.logger import Logger
 
-# TODO 今晚写好比较帧间突变的代码
-
-
 class FrogROI:
     def __init__(self, image_width, image_height, init_image_path,
                  region_scale=0.1, pixel_change_threshold=50):
         self.image_width = image_width
         self.image_height = image_height
         self.init_image_path = init_image_path
-        self.current_image = cv2.imread(init_image_path)
+        # self.current_image = cv2.imread(init_image_path)
         # 需要持续更新的比较基准（engram）是和current_image形状相同的numpy array，初始值全部置零
         self.engram = np.zeros((self.image_height, self.image_width, 3), dtype=np.float32)
-        self.engram_factor = np.array([5, 3, 2.5, 2, 1.5, 1.25, 1, 0.75, 0.5, 0.25])
-        # self.engram_factor = np.array([10, 2.5, 1, 0.9, 0.8, 0.7, 0.6, 0.5, 0.2, 0.1])
+        # self.engram_factor = np.array([5, 3, 2.5, 2, 1.5, 1.25, 1, 0.75, 0.5, 0.25])
+        self.engram_factor = np.array([10, 2.5, 1, 0.9, 0.8, 0.7, 0.6, 0.5, 0.2, 0.1])
         self.region_scale = region_scale
         self.pixel_change_threshold = pixel_change_threshold
         # 用于计算比较基准的图片
@@ -27,6 +24,11 @@ class FrogROI:
     
     def store_engram_images(self, image_path):
         self.engram_images.append(cv2.imread(image_path))
+        if len(self.engram_images) > 10:
+            self.engram_images.pop(0)
+
+    def store_engram_images_raw(self, raw_image):
+        self.engram_images.append(raw_image)
         if len(self.engram_images) > 10:
             self.engram_images.pop(0)
     
@@ -95,9 +97,18 @@ class FrogROI:
             cv2.imwrite(os.path.join(visualize_path, f"image_{marker}_target.jpg"), target_image)
             logger.close()
         return detected_regions
+
     
 def blur_image(img, blur_factor):
         return cv2.GaussianBlur(img, (blur_factor, blur_factor), 0)
+
+
+def visualize_rois(img, img0, engram, roi_tlwhs, result_path='results/', file_marker='test'):
+    for roi in roi_tlwhs:
+        cv2.rectangle(img, (roi[0], roi[1]), (roi[0]+roi[2], roi[1]+roi[3]), (0, 255, 0), 2)
+    cv2.imwrite(os.path.join(result_path, f"{file_marker}_roi.jpg"), img)
+    cv2.imwrite(os.path.join(result_path, f"{file_marker}_origin.jpg"), img0)
+    cv2.imwrite(os.path.join(result_path, f"{file_marker}_engram.jpg"), engram)
 
 
 if __name__ == '__main__':
