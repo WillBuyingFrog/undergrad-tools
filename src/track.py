@@ -73,7 +73,9 @@ def write_results_score(filename, results, data_type):
     logger.info('save results to {}'.format(filename))
 
 
-def eval_seq(opt, dataloader, data_type, result_filename, save_dir=None, show_image=True, frame_rate=30, use_cuda=True):
+def eval_seq(opt, dataloader, data_type, result_filename,
+              save_dir=None, show_image=True, frame_rate=30, use_cuda=True,
+              sequence_name='default', clear_prev_vis=False):
     if save_dir:
         mkdir_if_missing(save_dir)
     tracker = JDETracker(opt, frame_rate=frame_rate)
@@ -84,7 +86,7 @@ def eval_seq(opt, dataloader, data_type, result_filename, save_dir=None, show_im
     fovea_visualize_path = opt.fovea_visualize_path
 
     # clear all .jpg images in fovea_visualize_path
-    if opt.visualize_fovea:
+    if opt.visualize_fovea > 0 and clear_prev_vis:
         for file in os.listdir(fovea_visualize_path):
             if file.endswith('.jpg'):
                 os.remove(os.path.join(fovea_visualize_path, file))
@@ -136,13 +138,14 @@ def eval_seq(opt, dataloader, data_type, result_filename, save_dir=None, show_im
                 fovea_x, fovea_y = optimize(prev_online_tlwhs, fovea_width, fovea_height, img_width, img_height,
                                    init_x=init_x, init_y=init_y, epochs=epochs, algo=algo,
                                    visualize=visualize, visualize_path=visualize_path)
-                if i % 5 == 0:
+                if opt.visualize_fovea > 0 and i % 50 == 0:
                     print(f'Optimized position: x={fovea_x:.2f}, y={fovea_y:.2f}')
                     # make a copy of blurred_img and region_detector.engram
-                    if opt.visualize_fovea:
+                    if opt.visualize_fovea > 1:
                         blurred_img_copy = np.copy(blurred_img)
                         origin_img_copy = np.copy(img0)
                         engram_copy = np.copy(region_detector.engram)
+                        print(f'Saving images with marked roi...')
                         visualize_rois(blurred_img_copy, origin_img_copy, engram_copy, roi_tlwhs, 
                                     result_path='../fovea_result/', file_marker=str(i))
                     
@@ -162,15 +165,16 @@ def eval_seq(opt, dataloader, data_type, result_filename, save_dir=None, show_im
             img = np.ascontiguousarray(img, dtype=np.float32)
             img /= 255.0
 
-            if opt.visualize_fovea and i % 5 == 0:
+            if opt.visualize_fovea > 0 and i % 50 == 0:
                 fovea_path = opt.fovea_visualize_path
-                cv2.imwrite(fovea_path + f'/{frame_id}_foveated.jpg', fovea_img0)
+                cv2.imwrite(fovea_path + f'/{sequence_name}_{frame_id}_opt_foveated.jpg', fovea_img0)
                 print(f'Saving foveated image at frame {frame_id} to {fovea_path}')
         
             # 清空prev_online_tlwhs
             prev_online_tlwhs = []
 
         if opt.static_fovea:
+            img_height, img_width = img0.shape[:2]
             fovea_width = img_width // 2
             fovea_height = img_height // 2
             fovea_x = img_width // 2 - fovea_width // 2
@@ -186,9 +190,9 @@ def eval_seq(opt, dataloader, data_type, result_filename, save_dir=None, show_im
             img = np.ascontiguousarray(img, dtype=np.float32)
             img /= 255.0
 
-            if opt.visualize_fovea and i % 5 == 0:
+            if opt.visualize_fovea and i % 50 == 0:
                 fovea_path = opt.fovea_visualize_path
-                cv2.imwrite(fovea_path + f'/{frame_id}_static_foveated.jpg', fovea_img0)
+                cv2.imwrite(fovea_path + f'/{sequence_name}_{frame_id}_static_foveated.jpg', fovea_img0)
                 print(f'Saving static foveated image at frame {frame_id} to {fovea_path}')
 
         
@@ -218,7 +222,7 @@ def eval_seq(opt, dataloader, data_type, result_filename, save_dir=None, show_im
         if opt.fovea_optimize:
             prev_online_tlwhs = online_tlwhs
             
-            if i % 5 == 0 and i > 0 and opt.visualize_fovea:
+            if i % 5 == 0 and i > 0 and opt.visualize_fovea > 1:
                 visualize_all_regions(fovea_img0, roi_tlwhs, online_tlwhs,
                                       result_path='../fovea_result/', file_marker=str(i))
         
@@ -271,7 +275,7 @@ def main(opt, data_root='/data/MOT16/train', det_root=None, seqs=('MOT16-05',), 
         meta_info = open(os.path.join(data_root, seq, 'seqinfo.ini')).read()
         frame_rate = int(meta_info[meta_info.find('frameRate') + 10:meta_info.find('\nseqLength')])
         nf, ta, tc = eval_seq(opt, dataloader, data_type, result_filename,
-                              save_dir=output_dir, show_image=show_image, frame_rate=frame_rate)
+                              save_dir=output_dir, show_image=show_image, frame_rate=frame_rate, sequence_name=seq)
         n_frame += nf
         timer_avgs.append(ta)
         timer_calls.append(tc)
@@ -402,7 +406,7 @@ if __name__ == '__main__':
     main(opt,
          data_root=data_root,
          seqs=seqs,
-         exp_name='MOT17_test_public_dla34',
+         exp_name='MOT15_optimized_fovea',
          show_image=False,
          save_images=False,
          save_videos=True)
