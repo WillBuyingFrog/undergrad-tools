@@ -74,8 +74,9 @@ def foveation(img):
 
 def foveation_tlwh(img, tlwh, blur_factor=37):
 
-    left_up = tlwh[0], tlwh[1]
-    right_down = tlwh[0] + tlwh[2], tlwh[1] + tlwh[3]
+    left_up = (tlwh[0], tlwh[1])
+    right_down = (tlwh[0] + tlwh[2], tlwh[1] + tlwh[3])
+
 
     processed_image = cv2.GaussianBlur(img, (blur_factor, blur_factor), 0)
     processed_image[left_up[1]:right_down[1], left_up[0]:right_down[0]] = img[left_up[1]:right_down[1], left_up[0]:right_down[0]]

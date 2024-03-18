@@ -20,7 +20,7 @@ from tracking_utils.evaluation import Evaluator
 import datasets.dataset.jde as datasets
 from frog.optimize_location import optimize
 from frog.calculate_roi import FrogROI
-from frog.calculate_roi import blur_image, visualize_rois
+from frog.calculate_roi import blur_image, visualize_rois, visualize_all_regions
 from frog.foveation import foveation_tlwh, jde_letterbox
 from tracking_utils.utils import mkdir_if_missing
 from opts import opts
@@ -81,7 +81,13 @@ def eval_seq(opt, dataloader, data_type, result_filename, save_dir=None, show_im
     results = []
     frame_id = 0
     prev_online_tlwhs = []
+    fovea_visualize_path = opt.fovea_visualize_path
 
+    # clear all .jpg images in fovea_visualize_path
+    if opt.visualize_fovea:
+        for file in os.listdir(fovea_visualize_path):
+            if file.endswith('.jpg'):
+                os.remove(os.path.join(fovea_visualize_path, file))
 
     #for path, img, img0 in dataloader:
     for i, (path, img, img0) in enumerate(dataloader):
@@ -133,18 +139,20 @@ def eval_seq(opt, dataloader, data_type, result_filename, save_dir=None, show_im
                 if i % 5 == 0:
                     print(f'Optimized position: x={fovea_x:.2f}, y={fovea_y:.2f}')
                     # make a copy of blurred_img and region_detector.engram
-                    blurred_img_copy = np.copy(blurred_img)
-                    origin_img_copy = np.copy(img0)
-                    engram_copy = np.copy(region_detector.engram)
-                    visualize_rois(blurred_img_copy, origin_img_copy, engram_copy, roi_tlwhs, 
-                                   result_path='results/', file_marker=str(i))
-                fovea_img0 = foveation_tlwh(img0, (fovea_x, fovea_y, fovea_width, fovea_height), blur_factor=37)
+                    if opt.visualize_fovea:
+                        blurred_img_copy = np.copy(blurred_img)
+                        origin_img_copy = np.copy(img0)
+                        engram_copy = np.copy(region_detector.engram)
+                        visualize_rois(blurred_img_copy, origin_img_copy, engram_copy, roi_tlwhs, 
+                                    result_path='../fovea_result/', file_marker=str(i))
+                    
+                fovea_img0 = foveation_tlwh(img0, [int(fovea_x), int(fovea_y), fovea_width, fovea_height], blur_factor=37)
             else:
                 print(f'Empty tlwhs list at frame {frame_id}, using default fovea location')
                 # 否则默认最中央区域清晰，剩余区域模糊
                 init_top = init_x - fovea_width // 2
                 init_left = init_y - fovea_height // 2
-                fovea_img0 = foveation_tlwh(img0, (init_top, init_left, fovea_width, fovea_height), blur_factor=37)
+                fovea_img0 = foveation_tlwh(img0, [int(init_top), int(init_left), fovea_width, fovea_height], blur_factor=37)
             
             img0 = fovea_img0
             # 使用原作者代码中的宽高设置
@@ -156,8 +164,7 @@ def eval_seq(opt, dataloader, data_type, result_filename, save_dir=None, show_im
 
             if opt.visualize_fovea and i % 5 == 0:
                 fovea_path = opt.fovea_visualize_path
-                cv2.imwrite(fovea_path + f'/{frame_id}.jpg', img)
-                cv2.imwrite(fovea_path + f'/original_{frame_id}.jpg', fovea_img0)
+                cv2.imwrite(fovea_path + f'/{frame_id}_foveated.jpg', fovea_img0)
                 print(f'Saving foveated image at frame {frame_id} to {fovea_path}')
         
         if opt.fovea_optimize:
@@ -188,10 +195,14 @@ def eval_seq(opt, dataloader, data_type, result_filename, save_dir=None, show_im
         
         if opt.fovea_optimize:
             prev_online_tlwhs = online_tlwhs
+            
+            if i % 5 == 0 and i > 0 and opt.visualize_fovea:
+                visualize_all_regions(fovea_img0, roi_tlwhs, online_tlwhs,
+                                      result_path='../fovea_result/', file_marker=str(i))
         
-        if frame_id % 20 == 0:
-            print(f'Example of tlwhs values: {online_tlwhs[0][:5]}')
-            print(f'FOVEA_OPTIMIZE value is {FOVEA_OPTIMIZE}')
+        # if frame_id % 20 == 0:
+        #     print(f'Example of tlwhs values: {online_tlwhs[0][:5]}')
+        #     print(f'FOVEA_OPTIMIZE value is {FOVEA_OPTIMIZE}')
         
         
             

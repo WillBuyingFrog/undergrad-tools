@@ -111,6 +111,16 @@ def visualize_rois(img, img0, engram, roi_tlwhs, result_path='results/', file_ma
     cv2.imwrite(os.path.join(result_path, f"{file_marker}_origin.jpg"), img0)
     cv2.imwrite(os.path.join(result_path, f"{file_marker}_engram.jpg"), engram)
 
+def visualize_all_regions(img, roi_tlwhs, target_tlwhs, result_path='results/', file_marker='test'):
+    for roi in roi_tlwhs:
+        cv2.rectangle(img, (roi[0], roi[1]), (roi[0]+roi[2], roi[1]+roi[3]), (0, 255, 0), 2)
+    for target in target_tlwhs:
+        print(f'Drawing target: {target}')
+        top_left = (int(target[0]), int(target[1]))
+        right_bottom = (int(target[0] + target[2]), int(target[1] + target[3]))
+        cv2.rectangle(img, top_left, right_bottom, (255, 0, 0), 2)
+    cv2.imwrite(os.path.join(result_path, f"{file_marker}_all_regions.jpg"), img)
+
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()

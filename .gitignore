@@ -2,6 +2,7 @@
 
 __pycache__/
 results/
+fovea_result/
 
 temp.txt
 testdata.txt
