@@ -22,8 +22,11 @@ def decrease_saturation_based_on_distance(result, distances, max_radius):
 
     return result_rgb
 
-def precompute_distance_and_levels(shape, num_levels):
-    center = (shape[1] / 2, shape[0] / 2)
+def precompute_distance_and_levels(shape, num_levels, custom_center=None):
+    if custom_center is not None:
+        center = custom_center
+    else:
+        center = (shape[1] / 2, shape[0] / 2)
     # Compute the distance from the center for each pixel
     y = np.arange(shape[0]).reshape(-1, 1)
     x = np.arange(shape[1])
@@ -94,13 +97,18 @@ if __name__ == "__main__":
     image_path = r"./img_test.png"
     image = Image.open(image_path)
     image = image.convert('RGB')
-    blurness_level = 10
-
-    # Precompute the distances and levels only once 避免在处理每个图像时都重新计算距离和级别矩阵，从而提高效率。
-    distances, levels = precompute_distance_and_levels(shape=np.array(image).shape, num_levels=blurness_level)
+    blurness_level = 8
 
     # Measure the time before the function call
     start_time = time.time()
+
+    image_shape = np.array(image).shape
+
+    # Precompute the distances and levels only once 避免在处理每个图像时都重新计算距离和级别矩阵，从而提高效率。
+    distances, levels = precompute_distance_and_levels(shape=image_shape, num_levels=blurness_level,
+                                                       custom_center=(image_shape[1] / 5, image_shape[0] / 3))
+
+    
 
     result = simulate_fovea(image, distances, levels, blurness_level = blurness_level)
 
