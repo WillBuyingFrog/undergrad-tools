@@ -5,8 +5,6 @@ import os
 
 from .frogutils.logger import Logger
 
-# TODO 今晚写好比较帧间突变的代码
-
 
 class FrogROI:
     def __init__(self, image_width, image_height, init_image_path,
