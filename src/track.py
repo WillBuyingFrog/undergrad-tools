@@ -167,9 +167,31 @@ def eval_seq(opt, dataloader, data_type, result_filename, save_dir=None, show_im
                 cv2.imwrite(fovea_path + f'/{frame_id}_foveated.jpg', fovea_img0)
                 print(f'Saving foveated image at frame {frame_id} to {fovea_path}')
         
-        if opt.fovea_optimize:
             # 清空prev_online_tlwhs
             prev_online_tlwhs = []
+
+        if opt.static_fovea:
+            fovea_width = img_width // 2
+            fovea_height = img_height // 2
+            fovea_x = img_width // 2 - fovea_width // 2
+            fovea_y = img_height // 2 - fovea_height // 2
+            
+            fovea_img0 = foveation_tlwh(img0, [int(fovea_x), int(fovea_y), fovea_width, fovea_height], blur_factor=37)
+
+            img0 = fovea_img0
+            # 使用原作者代码中的宽高设置
+            img, _, _, _ = jde_letterbox(img0, height=opt.img_size[1], width=opt.img_size[0])
+            # Normalize RGB
+            img = img[:, :, ::-1].transpose(2, 0, 1)
+            img = np.ascontiguousarray(img, dtype=np.float32)
+            img /= 255.0
+
+            if opt.visualize_fovea and i % 5 == 0:
+                fovea_path = opt.fovea_visualize_path
+                cv2.imwrite(fovea_path + f'/{frame_id}_static_foveated.jpg', fovea_img0)
+                print(f'Saving static foveated image at frame {frame_id} to {fovea_path}')
+
+        
         
         # run tracking
         timer.tic()

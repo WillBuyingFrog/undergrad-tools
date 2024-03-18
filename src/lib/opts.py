@@ -14,7 +14,7 @@ class opts(object):
     self.parser.add_argument('--fovea_optimize', default=False, help='optimize fovea region location')
     self.parser.add_argument('--visualize_fovea', default=False, help='Whether to visualize fovea processed image')
     self.parser.add_argument('--fovea_visualize_path', default='../fovea_result', help='path to store fovea visualization')
-
+    self.parser.add_argument('--static_fovea', default=False, help='Whether to use static foveation')
 
     # basic experiment setting
     self.parser.add_argument('task', default='mot', help='mot')
