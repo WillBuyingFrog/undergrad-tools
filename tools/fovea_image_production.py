@@ -56,7 +56,18 @@ def foveation(img):
     return processed_image
     
 
-# 第二步：指定任意一个位置(x,y)，以此位置为中心的一个正方形区域清晰，周围模糊
+# 第二步：指定任意一个区域（tlwh格式），该区域清晰，周围模糊
+
+def foveation_tlwh(img, tlwh, blur_factor=37):
+
+    left_up = tlwh[0], tlwh[1]
+    right_down = tlwh[0] + tlwh[2], tlwh[1] + tlwh[3]
+
+    processed_image = cv2.GaussianBlur(img, (blur_factor, blur_factor), 0)
+    processed_image[left_up[1]:right_down[1], left_up[0]:right_down[0]] = img[left_up[1]:right_down[1], left_up[0]:right_down[0]]
+
+    return processed_image
+
 
 # 第三步：在第二部的基础上，根据每个位置到(x,y)的距离，调整模糊程度的大小
     
