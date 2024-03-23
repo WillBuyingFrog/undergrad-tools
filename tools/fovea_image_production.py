@@ -109,23 +109,24 @@ def foveation_demo(mot_path):
             
 
 # 输出蛇形变换的中央凹区域
-def foveation_snake(img, frame_id, fovea_width, fovea_height, blur_factor=37, debug=0):
+def foveation_snake(img, frame_id, fovea_width, fovea_height, blur_factor=37, mode=1):
     # 获取图像宽高
     h, w = img.shape[:2]
 
     step_w = (w - fovea_width) // 9
     step_h = (h - fovea_height) // 5
-
-    # 按照蛇形规则，从一帧到下一帧，在宽方向上移动step_w，并且只有在宽方向上移动到头的时候，才在高方向上移动step_h
-    # 一直到高方向移动到头
-    current_fovea_tl = ((frame_id % 10) * step_w, ((frame_id // 10) % 6) * step_h)
-    current_fovea_br = (current_fovea_tl[0] + fovea_width, current_fovea_tl[1] + fovea_height)
     
-    if debug == 0:
+    if mode == 1:
+        # 按照蛇形规则，从一帧到下一帧，在宽方向上移动step_w，并且只有在宽方向上移动到头的时候，才在高方向上移动step_h
+        # 一直到高方向移动到头
+        current_fovea_tl = ((frame_id % 10) * step_w, ((frame_id // 10) % 6) * step_h)
+        current_fovea_br = (current_fovea_tl[0] + fovea_width, current_fovea_tl[1] + fovea_height)
         processed_image = cv2.GaussianBlur(img, (blur_factor, blur_factor), 0)
         processed_image[current_fovea_tl[1]:current_fovea_br[1], current_fovea_tl[0]:current_fovea_br[0]] = img[current_fovea_tl[1]:current_fovea_br[1], current_fovea_tl[0]:current_fovea_br[0]]
         return processed_image
-    elif debug == 1:
+    elif mode == -1:
+        current_fovea_tl = ((frame_id % 10) * step_w, ((frame_id // 10) % 6) * step_h)
+        current_fovea_br = (current_fovea_tl[0] + fovea_width, current_fovea_tl[1] + fovea_height)
         return current_fovea_tl, current_fovea_br
     
 
