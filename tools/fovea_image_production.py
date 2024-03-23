@@ -29,6 +29,20 @@ def create_foveated_mapping(image_shape, center, scale=1.0, strength=0.5):
 
     return distorted_x.astype(np.float32), distorted_y.astype(np.float32)
 
+# ---
+# img0向img的变换
+def jde_letterbox(img, height=608, width=1088,
+              color=(127.5, 127.5, 127.5)):  # resize a rectangular image to a padded rectangular
+    shape = img.shape[:2]  # shape = [height, width]
+    ratio = min(float(height) / shape[0], float(width) / shape[1])
+    new_shape = (round(shape[1] * ratio), round(shape[0] * ratio))  # new_shape = [width, height]
+    dw = (width - new_shape[0]) / 2  # width padding
+    dh = (height - new_shape[1]) / 2  # height padding
+    top, bottom = round(dh - 0.1), round(dh + 0.1)
+    left, right = round(dw - 0.1), round(dw + 0.1)
+    img = cv2.resize(img, new_shape, interpolation=cv2.INTER_AREA)  # resized, no border
+    img = cv2.copyMakeBorder(img, top, bottom, left, right, cv2.BORDER_CONSTANT, value=color)  # padded rectangular
+    return img, ratio, dw, dh
 
 
 # --- 
@@ -60,8 +74,9 @@ def foveation(img):
 
 def foveation_tlwh(img, tlwh, blur_factor=37):
 
-    left_up = tlwh[0], tlwh[1]
-    right_down = tlwh[0] + tlwh[2], tlwh[1] + tlwh[3]
+    left_up = (tlwh[0], tlwh[1])
+    right_down = (tlwh[0] + tlwh[2], tlwh[1] + tlwh[3])
+
 
     processed_image = cv2.GaussianBlur(img, (blur_factor, blur_factor), 0)
     processed_image[left_up[1]:right_down[1], left_up[0]:right_down[0]] = img[left_up[1]:right_down[1], left_up[0]:right_down[0]]
