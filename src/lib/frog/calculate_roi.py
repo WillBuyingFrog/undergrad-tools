@@ -16,7 +16,11 @@ class FrogROI:
         # 需要持续更新的比较基准（engram）是和current_image形状相同的numpy array，初始值全部置零
         self.engram = np.zeros((self.image_height, self.image_width, 3), dtype=np.float32)
         # self.engram_factor = np.array([5, 3, 2.5, 2, 1.5, 1.25, 1, 0.75, 0.5, 0.25])
-        self.engram_factor = np.array([10, 2.5, 1, 0.9, 0.8, 0.7, 0.6, 0.5, 0.2, 0.1])
+        # self.engram_factor = np.array([10, 2.5, 1, 0.9, 0.8, 0.7, 0.6, 0.5, 0.2, 0.1])
+        # Inspired from "Predictive properties of visual adaptation"
+        self.engram_factor = np.array([10, 5, 2.5, 1, 0.5, 0.2, 0.2, -0.2, -0.5, -1])
+        # The engram factors below doesnt work :(
+        # self.engram_factor = np.array([2.5, 2.5, 5.0, 7.5, 7.5, 7.5, 5.0, 1.5, 0.5, 0.2])
         self.region_scale = region_scale
         self.pixel_change_threshold = pixel_change_threshold
         # 用于计算比较基准的图片

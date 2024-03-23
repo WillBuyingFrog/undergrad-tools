@@ -14,7 +14,10 @@ class opts(object):
     self.parser.add_argument('--fovea_optimize', default=False, help='optimize fovea region location')
     self.parser.add_argument('--visualize_fovea', default=0, type=int, help='Whether to visualize fovea processed image')
     self.parser.add_argument('--fovea_visualize_path', default='../fovea_result', help='path to store fovea visualization')
+    self.parser.add_argument('--fovea_factor', default=2.0, type=float)
+
     self.parser.add_argument('--static_fovea', default=False, help='Whether to use static foveation')
+    self.parser.add_argument('--snake_fovea', default=0, type=int, help='Whether to use snake foveation. 1 for width first, 2 for height first')
 
     # basic experiment setting
     self.parser.add_argument('task', default='mot', help='mot')

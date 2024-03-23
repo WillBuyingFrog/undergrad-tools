@@ -22,6 +22,7 @@ from frog.optimize_location import optimize
 from frog.calculate_roi import FrogROI
 from frog.calculate_roi import blur_image, visualize_rois, visualize_all_regions
 from frog.foveation import foveation_tlwh, jde_letterbox
+from frog.foveation import foveation_snake
 from tracking_utils.utils import mkdir_if_missing
 from opts import opts
 
@@ -84,6 +85,7 @@ def eval_seq(opt, dataloader, data_type, result_filename,
     frame_id = 0
     prev_online_tlwhs = []
     fovea_visualize_path = opt.fovea_visualize_path
+    fovea_factor = opt.fovea_factor
 
     # clear all .jpg images in fovea_visualize_path
     if opt.visualize_fovea > 0 and clear_prev_vis:
@@ -111,8 +113,8 @@ def eval_seq(opt, dataloader, data_type, result_filename,
             
 
 
-            fovea_width = img_width // 2
-            fovea_height = img_height // 2
+            fovea_width = int(img_width // fovea_factor)
+            fovea_height = int(img_height // fovea_factor)
             init_x, init_y = img_width // 2, img_height // 2
             epochs = 6
             algo = 'annealing'
@@ -157,6 +159,10 @@ def eval_seq(opt, dataloader, data_type, result_filename,
                 init_left = init_y - fovea_height // 2
                 fovea_img0 = foveation_tlwh(img0, [int(init_top), int(init_left), fovea_width, fovea_height], blur_factor=37)
             
+            if opt.visualize_fovea > 1 and i % 5 == 0:
+                # save origin blurred image for drawing all target regions
+                img0_blurred = blur_image(img0, 37)
+
             img0 = fovea_img0
             # 使用原作者代码中的宽高设置
             img, _, _, _ = jde_letterbox(img0, height=opt.img_size[1], width=opt.img_size[0])
@@ -175,8 +181,8 @@ def eval_seq(opt, dataloader, data_type, result_filename,
 
         if opt.static_fovea:
             img_height, img_width = img0.shape[:2]
-            fovea_width = img_width // 2
-            fovea_height = img_height // 2
+            fovea_width = int(img_width // fovea_factor)
+            fovea_height = int(img_height // fovea_factor)
             fovea_x = img_width // 2 - fovea_width // 2
             fovea_y = img_height // 2 - fovea_height // 2
             
@@ -195,7 +201,25 @@ def eval_seq(opt, dataloader, data_type, result_filename,
                 cv2.imwrite(fovea_path + f'/{sequence_name}_{frame_id}_static_foveated.jpg', fovea_img0)
                 print(f'Saving static foveated image at frame {frame_id} to {fovea_path}')
 
-        
+        if opt.snake_fovea != 0:
+            img_height, img_width = img0.shape[:2]
+            fovea_width = int(img_width // fovea_factor)
+            fovea_height = int(img_height // fovea_factor)
+
+            fovea_img0 = foveation_snake(img0, i, fovea_width, fovea_height, blur_factor=37, mode=opt.snake_fovea)
+
+            img0 = fovea_img0
+            # 使用原作者代码中的宽高设置
+            img, _, _, _ = jde_letterbox(img0, height=opt.img_size[1], width=opt.img_size[0])
+            # Normalize RGB
+            img = img[:, :, ::-1].transpose(2, 0, 1)
+            img = np.ascontiguousarray(img, dtype=np.float32)
+            img /= 255.0
+
+            if opt.visualize_fovea and i % 50 == 0:
+                fovea_path = opt.fovea_visualize_path
+                cv2.imwrite(fovea_path + f'/{sequence_name}_{frame_id}_snake_foveated_1.jpg', fovea_img0)
+                print(f'Saving snake foveated image(mode {opt.snake_fovea}) at frame {frame_id} to {fovea_path}')
         
         # run tracking
         timer.tic()
@@ -223,7 +247,7 @@ def eval_seq(opt, dataloader, data_type, result_filename,
             prev_online_tlwhs = online_tlwhs
             
             if i % 5 == 0 and i > 0 and opt.visualize_fovea > 1:
-                visualize_all_regions(fovea_img0, roi_tlwhs, online_tlwhs,
+                visualize_all_regions(img0_blurred, roi_tlwhs, online_tlwhs,
                                       result_path='../fovea_result/', file_marker=str(i))
         
         # if frame_id % 20 == 0:
@@ -312,13 +336,20 @@ if __name__ == '__main__':
     opt = opts().init()
 
     if not opt.val_mot16:
-        seqs_str = '''KITTI-13
-                      KITTI-17
-                      ADL-Rundle-6
-                      PETS09-S2L1
-                      TUD-Campus
-                      TUD-Stadtmitte'''
-        #seqs_str = '''TUD-Campus'''
+        # seqs_str = '''Venice-2
+        #               KITTI-13
+        #               KITTI-17
+        #               ETH-Bahnhof
+        #               ETH-Sunnyday
+        #               PETS09-S2L1
+        #               TUD-Campus
+        #               TUD-Stadtmitte
+        #               ADL-Rundle-6
+        #               ADL-Rundle-8
+        #               ETH-Pedcross2
+        #               TUD-Stadtmitte'''
+        seqs_str = '''TUD-Campus
+                      PETS09-S2L1'''
         data_root = os.path.join(opt.data_dir, 'MOT15-Fair/images/train')
     else:
         seqs_str = '''MOT16-02
@@ -406,7 +437,27 @@ if __name__ == '__main__':
     main(opt,
          data_root=data_root,
          seqs=seqs,
-         exp_name='MOT15_optimized_fovea',
+         exp_name='snake_fovea_sample',
          show_image=False,
          save_images=False,
          save_videos=True)
+
+
+# Use the following command to run expreiments:
+    # Optimized foveation
+    # python track.py mot --load_model ../models/fairmot_dla34.pth --conf_thres 0.6 --fovea_optimize=True 
+
+    # Static foveation
+    # python track.py mot --load_model ../models/fairmot_dla34.pth --conf_thres 0.6 --static_fovea=True
+
+
+    # Snake foveation(width first)
+    # python track.py mot --load_model ../models/fairmot_dla34.pth --conf_thres 0.6 --snake_fovea=1
+
+
+    
+    # To add visualization of preprocessed images, set visualize_fovea to 1
+    # --visualize_fovea=1
+
+    # To add visualization of engrams, set visualize_fovea to 2
+    # --visualize_fovea=2
