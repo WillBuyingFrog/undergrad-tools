@@ -55,19 +55,23 @@ def calculate_coverage(x, y, tlwh, fovea_width, fovea_height):
 
     return coverage
 
-def total_coverage(x, y, tlwhs, fovea_width, fovea_height):
+def total_coverage(x, y, tlwhs, fovea_width, fovea_height,
+                   opt_version=1, box_weight=[]):
     total = 0
-    for tlwh in tlwhs:
-        total += calculate_coverage(x, y, tlwh, fovea_width, fovea_height)
+    for index, tlwh in enumerate(tlwhs):
+        if opt_version == 2:
+            total += (calculate_coverage(x, y, tlwh, fovea_width, fovea_height) * box_weight[index])
+        elif opt_version == 1:
+            total += calculate_coverage(x, y, tlwh, fovea_width, fovea_height)
     return total
 
 def simulated_annealing(tlwhs, fovea_width, fovea_height, img_width, img_height,
                          init_x=None, init_y=None,
+                         opt_version=1, box_weight=[],
                          visualize_path='../results/', visualize=False, marker='mark'):
     if visualize:
         logger = Logger(os.path.join(visualize_path, f'annealing_result_{marker}.txt'))
-    else:
-        logger = Logger('temp.txt')
+    
 
     # 计算所有目标框的中心点
     center_x, center_y = 0.0, 0.0
@@ -90,13 +94,13 @@ def simulated_annealing(tlwhs, fovea_width, fovea_height, img_width, img_height,
     else:
         current_y = max(1, center_y - fovea_height)
     current_score = total_coverage(current_x, current_y, tlwhs, fovea_width, fovea_height)
-
-    logger.write_log(f'New round. Initial position x={current_x:.2f}, y={current_y:.2f}, score={current_score:.2f}')
+    if visualize:
+        logger.write_log(f'New round. Initial position x={current_x:.2f}, y={current_y:.2f}, score={current_score:.2f}')
 
     # 温度调度参数
     initial_temp = 50.0
     final_temp = 0.05
-    alpha = 0.96
+    alpha = 0.9
     temp = initial_temp
 
     # 记录循环轮次
@@ -129,28 +133,31 @@ def simulated_annealing(tlwhs, fovea_width, fovea_height, img_width, img_height,
             #                       save_path=visualize_path, img_name=f'ann_{marker}_initial.jpg')
 
 
-        next_score = total_coverage(next_x, next_y, tlwhs, fovea_width, fovea_height)
+        next_score = total_coverage(next_x, next_y, tlwhs, fovea_width, fovea_height,
+                                    opt_version=opt_version, box_weight=box_weight)
 
         # 计算接受概率
         accept_probability = math.exp((next_score - current_score) / temp)
-
-        logger.write_log(f'\tRound {counter} - Temp: {temp:.2f}, Current score: {current_score:.2f}, Next score: {next_score:.2f}, Accept probability: {accept_probability:.2f}')
+        if visualize:
+            logger.write_log(f'\tRound {counter} - Temp: {temp:.2f}, Current score: {current_score:.2f}, Next score: {next_score:.2f}, Accept probability: {accept_probability:.2f}')
 
         if next_score > current_score or random.random() < accept_probability:
-            logger.write_log(f'\t\tAccept new position: x={next_x:.2f}, y={next_y:.2f}, score={next_score:.2f}')
+            if visualize:
+                logger.write_log(f'\t\tAccept new position: x={next_x:.2f}, y={next_y:.2f}, score={next_score:.2f}')
             current_x, current_y = next_x, next_y
             current_score = next_score
 
         # 降低温度
         temp *= alpha
-    
-    logger.write_log(f'\tFinal position: x={current_x:.2f}, y={current_y:.2f}, score={current_score:.2f}')
-    logger.close()  
+    if visualize:
+        logger.write_log(f'\tFinal position: x={current_x:.2f}, y={current_y:.2f}, score={current_score:.2f}')
+        logger.close()  
 
     return current_x, current_y, current_score
 
 def optimize(tlwhs, fovea_width, fovea_height, img_width, img_height,
              init_x=None, init_y=None, epochs=1, algo='annealing',
+             opt_version=1, box_weight=[],
              visualize=False, visualize_path='../results'):
     if algo == 'annealing':
         avg_x, avg_y, total_score = 0, 0, 0.0
@@ -158,6 +165,7 @@ def optimize(tlwhs, fovea_width, fovea_height, img_width, img_height,
         for i in range(epochs):
             x, y, current_score = simulated_annealing(tlwhs, fovea_width, fovea_height, img_width, img_height,
                                        init_x=init_x, init_y=init_y,
+                                       opt_version=opt_version, box_weight=box_weight,
                                        visualize=visualize, visualize_path=visualize_path)
             results.append((x, y, current_score))
             if visualize:
