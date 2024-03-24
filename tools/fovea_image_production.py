@@ -124,11 +124,33 @@ def foveation_snake(img, frame_id, fovea_width, fovea_height, blur_factor=37, mo
         processed_image = cv2.GaussianBlur(img, (blur_factor, blur_factor), 0)
         processed_image[current_fovea_tl[1]:current_fovea_br[1], current_fovea_tl[0]:current_fovea_br[0]] = img[current_fovea_tl[1]:current_fovea_br[1], current_fovea_tl[0]:current_fovea_br[0]]
         return processed_image
+    elif mode == 2:
+        # 按照蛇形规则，从一帧到下一帧，在高方向上移动step_h，并且只有在高方向上移动到头的时候，才在宽方向上移动step_w
+        # 一直到宽方向移动到头
+        current_fovea_tl = (((frame_id // 6) % 10) * step_w, (frame_id % 6) * step_h)
+        current_fovea_br = (current_fovea_tl[0] + fovea_width, current_fovea_tl[1] + fovea_height)
+        processed_image = cv2.GaussianBlur(img, (blur_factor, blur_factor), 0)
+        processed_image[current_fovea_tl[1]:current_fovea_br[1], current_fovea_tl[0]:current_fovea_br[0]] = img[current_fovea_tl[1]:current_fovea_br[1], current_fovea_tl[0]:current_fovea_br[0]]
+        return processed_image
+
     elif mode == -1:
         current_fovea_tl = ((frame_id % 10) * step_w, ((frame_id // 10) % 6) * step_h)
         current_fovea_br = (current_fovea_tl[0] + fovea_width, current_fovea_tl[1] + fovea_height)
         return current_fovea_tl, current_fovea_br
     
+    elif mode == -2:
+        current_fovea_tl = (((frame_id // 6) % 10) * step_w, (frame_id % 6) * step_h)
+        current_fovea_br = (current_fovea_tl[0] + fovea_width, current_fovea_tl[1] + fovea_height)
+        return current_fovea_tl, current_fovea_br
+    
+
+def foveation_random(img, fovea_width, fovea_height, blur_factor=37):
+    h, w = img.shape[:2]
+    x = np.random.randint(0, w - fovea_width)
+    y = np.random.randint(0, h - fovea_height)
+    processed_image = cv2.GaussianBlur(img, (blur_factor, blur_factor), 0)
+    processed_image[y:y+fovea_height, x:x+fovea_width] = img[y:y+fovea_height, x:x+fovea_width]
+    return processed_image
 
 if __name__ == "__main__":
 
@@ -176,5 +198,5 @@ if __name__ == "__main__":
             snake_log.write('frame_id,tl_x,tl_y,br_x,br_y\n')
             for i in range(180):
 
-                current_fovea_tl, current_fovea_br = foveation_snake(image, i, fovea_width, fovea_height, blur_factor=37, debug=1)
+                current_fovea_tl, current_fovea_br = foveation_snake(image, i, fovea_width, fovea_height, blur_factor=37, mode=-2)
                 snake_log.write(f'{i},{current_fovea_tl[0]},{current_fovea_tl[1]},{current_fovea_br[0]},{current_fovea_br[1]}\n')
