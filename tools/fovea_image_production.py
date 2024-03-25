@@ -152,6 +152,13 @@ def foveation_random(img, fovea_width, fovea_height, blur_factor=37):
     processed_image[y:y+fovea_height, x:x+fovea_width] = img[y:y+fovea_height, x:x+fovea_width]
     return processed_image
 
+def visualize_foveal_region(img, fovea_tlwh, color=(0, 255, 0)):
+    x, y, w, h = fovea_tlwh
+    img = cv2.rectangle(img, (x, y), (x + w, y + h), color, 2)
+    return img
+
+
+
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='Foveation')

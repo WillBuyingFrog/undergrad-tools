@@ -129,7 +129,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--test_type', default='image', type=str, help='测试数据类型。如果是dir就代表像多目标跟踪模型里一样，按顺序计算所有帧图片的感兴趣区域')
-    parser.add_argument('--data_dir', default='images/', type=str, help='测试数据存放的位置')
+    parser.add_argument('--data_dir', default='roi_images/', type=str, help='测试数据存放的位置')
     parser.add_argument('--region_scale', default=0.025, type=float, help='感兴趣区域的比例系数')
     parser.add_argument('--pixel_change_threshold', default=70, type=int, help='感兴趣区域的像素变化阈值')
     parser.add_argument('--debug', default=False, type=bool, help='是否开启debug输出')
