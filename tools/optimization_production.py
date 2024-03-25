@@ -3,6 +3,7 @@ import argparse
 import random
 import math
 import os
+import cv2
 from frogutils.logger import Logger
 import matplotlib.pyplot as plt
 from frogutils.visualize import visualize_ann_result
