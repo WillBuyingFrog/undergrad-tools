@@ -4,10 +4,50 @@ import random
 import math
 import os
 from frogutils.logger import Logger
+import matplotlib.pyplot as plt
 from frogutils.visualize import visualize_ann_result
 
 
 OVERLAP_TRICK = True
+
+def visualize_all_results(roi_tlwhs, target_tlwhs, fovea_tlwh, roi_color, target_color, fovea_color,
+                          mode=1, img=None, img_width=-1, img_height=-1,
+                          save_path=None, img_name='test.jpg'):
+    # 需要在img上可视化锚框
+    if mode == 2:
+        img = img.copy()
+        if roi_tlwhs is not None:
+            for tlwh in roi_tlwhs:
+                x, y, w, h = tlwh
+                img = cv2.rectangle(img, (x, y), (x + w, y + h), roi_color, 2)
+        if target_tlwhs is not None:
+            for tlwh in target_tlwhs:
+                x, y, w, h = tlwh
+                img = cv2.rectangle(img, (x, y), (x + w, y + h), target_color, 2)
+        if fovea_tlwh is not None:
+            x, y, w, h = fovea_tlwh
+            img = cv2.rectangle(img, (x, y), (x + w, y + h), fovea_color, 2)
+        if save_path is not None:
+            cv2.imwrite(os.path.join(save_path, img_name), img)
+        return img
+    elif mode == 1:
+        # 需要在img_shape给出的最大横纵坐标的坐标系中，可视化锚框和中央凹区域
+        # 用matplotlib
+        if roi_tlwhs is not None:
+            for roi_tlwh in roi_tlwhs:
+                x, y, w, h = roi_tlwh
+                plt.plot([x, x + w, x + w, x, x], [y, y, y + h, y + h, y], roi_color)
+        if target_tlwhs is not None:
+            for target_tlwh in target_tlwhs:
+                x, y, w, h = target_tlwh
+                plt.plot([x, x + w, x + w, x, x], [y, y, y + h, y + h, y], target_color)
+        if fovea_tlwh is not None:
+            x, y, w, h = fovea_tlwh
+            plt.plot([x, x + w, x + w, x, x], [y, y, y + h, y + h, y], fovea_color)
+        plt.xlim(0, img_width)
+        plt.ylim(0, img_height)
+        plt.savefig(os.path.join(save_path, img_name))
+
 
 def calculate_overlap_area(x, y, tlwh, fovea_width, fovea_height):
     # 中央凹区域的左上角坐标
