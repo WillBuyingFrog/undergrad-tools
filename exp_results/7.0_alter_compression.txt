@@ -1,0 +1,26 @@
+                IDF1   IDP   IDR  Rcll   Prcn  GT MT  PT  ML  FP    FN IDs    FM  MOTA  MOTP IDt IDa IDm
+Venice-2       54.4% 84.6% 40.1% 46.1%  97.4%  26  6   9  11  88  3846  10   127 44.8% 0.198   1  10   1
+KITTI-13       44.1% 90.4% 29.2% 31.1%  96.4%  25  4   9  12   3   177   5     4 28.0% 0.197   2   4   1
+KITTI-17       46.9% 89.8% 31.8% 32.3%  91.2%   9  0   7   2  12   262   3    11 28.4% 0.243   1   1   0
+ETH-Bahnhof    39.3% 87.0% 25.4% 28.9%  99.0% 222 12  47 163  19  4538   9   231 28.5% 0.205  20   5  16
+ETH-Sunnyday   22.0% 51.5% 14.0% 27.1%  99.7%  30  1   5  24   1  1066  17    72 25.9% 0.197  11  13   8
+PETS09-S2L1    50.9% 65.5% 41.6% 61.9%  97.4%  19  2  17   0  76  1760  47   391 59.2% 0.280   6  41   1
+TUD-Campus     46.4% 78.7% 32.9% 41.8% 100.0%   8  0   4   4   0   209   2    21 41.2% 0.186   4   0   2
+TUD-Stadtmitte 66.6% 87.6% 53.7% 61.3% 100.0%  10  3   7   0   0   447   4    31 61.0% 0.203   2   3   1
+ADL-Rundle-6   64.7% 82.0% 53.5% 61.6%  94.5%  24  6  16   2 181  1921  15   115 57.7% 0.183   9   8   3
+ADL-Rundle-8   61.0% 79.8% 49.3% 57.7%  93.4%  28 11  11   6 277  2868  11   246 53.5% 0.208   6   9   4
+ETH-Pedcross2  51.9% 87.7% 36.8% 40.4%  96.3% 151  6  57  88 106  4027  25   185 38.4% 0.197  37  13  25
+OVERALL        53.3% 80.5% 39.8% 47.6%  96.2% 552 51 189 312 763 21121 148  1434 45.3% 0.211  99 107  62
+
+
+Average SSIM in sequence Venice-2: 0.7311600393617605
+Average SSIM in sequence KITTI-13: 0.6437049717808327
+Average SSIM in sequence KITTI-17: 0.5777525901502957
+Average SSIM in sequence ETH-Bahnhof: 0.6599036614314879
+Average SSIM in sequence ETH-Sunnyday: 0.7300673028235481
+Average SSIM in sequence PETS09-S2L1: 0.6654360723348941
+Average SSIM in sequence TUD-Campus: 0.6331924739786376
+Average SSIM in sequence TUD-Stadtmitte: 0.6651320186512099
+Average SSIM in sequence ADL-Rundle-6: 0.760430145741915
+Average SSIM in sequence ADL-Rundle-8: 0.8800727105847445
+Average SSIM in sequence ETH-Pedcross2: 0.7671135920876012

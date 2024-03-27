@@ -1,14 +1,39 @@
-2024-03-25 17:39:37 [INFO]: Time elapsed: 442.41 seconds, FPS: 12.43
+2024-03-28 01:27:19 [INFO]: Time elapsed: 479.67 seconds, FPS: 11.47
+
                 IDF1   IDP   IDR  Rcll   Prcn  GT MT  PT  ML  FP    FN IDs    FM  MOTA  MOTP IDt IDa IDm
-Venice-2       48.3% 78.7% 34.9% 40.5%  91.4%  26  6  11   9 273  4249  23   183 36.4% 0.188   4  18   2
-KITTI-13       29.7% 66.7% 19.1% 24.3%  84.6%  19  1   5  13   6   103   4     4 16.9% 0.290   1   3   0
-KITTI-17       49.3% 80.6% 35.5% 42.0%  95.4%   9  0   6   3   5   142   3     8 38.8% 0.195   1   3   1
-ETH-Bahnhof    43.4% 79.2% 29.8% 36.2%  96.1% 211  7  72 132  78  3428  36   280 34.1% 0.172  26  25  20
-ETH-Sunnyday   32.6% 65.3% 21.8% 32.0%  96.0%  28  0   8  20  14   707   9    63 29.7% 0.168   1   8   0
-PETS09-S2L1    38.4% 60.2% 28.2% 46.0%  98.5%  19  1  16   2  32  2455  33   176 44.6% 0.264   3  29   0
-TUD-Campus     26.6% 79.4% 16.0% 20.1% 100.0%   8  1   1   6   0   135   2     3 18.9% 0.217   4   0   2
-TUD-Stadtmitte 43.8% 76.2% 30.7% 40.2%  99.8%  10  0   6   4   1   691  12    40 39.1% 0.223   7   5   1
-ADL-Rundle-6   60.2% 78.6% 48.8% 60.5%  97.4%  24  6  17   1  80  1980  20   153 58.5% 0.175  13  11   4
-ADL-Rundle-8   49.9% 80.5% 36.2% 42.8%  95.3%  28  7  11  10 142  3868  22   358 40.4% 0.207   8  14   4
-ETH-Pedcross2  23.0% 74.6% 13.6% 18.1%  99.8% 142  0  27 115   2  3784  41   171 17.2% 0.200  11  27   6
-OVERALL        45.1% 75.9% 32.1% 40.5%  95.9% 524 29 180 315 633 21542 205  1439 38.2% 0.200  79 143  40
+Venice-2       47.5% 78.6% 34.0% 39.9%  92.3%  26  6  10  10 239  4289  20   165 36.3% 0.186   6  17   3
+KITTI-13       32.3% 67.4% 21.2% 26.7%  84.8%  19  3   4  12   7   107   4     3 19.2% 0.307   1   4   1
+KITTI-17       50.6% 85.2% 36.0% 40.1%  94.8%   9  0   7   2   6   163   2    17 37.1% 0.203   2   2   2
+ETH-Bahnhof    42.2% 77.7% 29.0% 35.2%  94.4% 210 11  69 130 111  3433  36   292 32.4% 0.173  35  22  24
+ETH-Sunnyday   32.2% 62.1% 21.8% 33.8%  96.5%  28  0   9  19  12   647  10    48 31.6% 0.164   1   9   0
+PETS09-S2L1    40.7% 62.7% 30.1% 47.3%  98.5%  19  2  16   1  33  2373  29   161 45.9% 0.264   2  26   0
+TUD-Campus     20.9% 60.6% 12.7% 20.9% 100.0%   8  0   3   5   0   125   0     0 20.9% 0.203   2   0   2
+TUD-Stadtmitte 50.7% 89.3% 35.4% 39.6% 100.0%  10  0   6   4   0   698   4    42 39.3% 0.220   2   2   0
+ADL-Rundle-6   62.3% 81.5% 50.4% 60.4%  97.6%  24  6  16   2  73  1984  26   158 58.4% 0.174  13  13   4
+ADL-Rundle-8   56.3% 89.4% 41.1% 43.6%  95.0%  28  7  12   9 157  3818  18   367 41.1% 0.207   6   9   2
+ETH-Pedcross2  24.7% 78.7% 14.6% 18.5%  99.6% 137  0  25 112   4  3901  23   175 17.9% 0.199  16  18  11
+OVERALL        46.9% 78.9% 33.4% 40.5%  95.8% 518 35 177 306 642 21538 172  1428 38.3% 0.199  86 122  49
+
+Average SSIM in sequence Venice-2: 0.7177589609837854
+Number of images processed: 600
+Average SSIM in sequence KITTI-13: 0.6182244615937078   
+Number of images processed: 340
+Average SSIM in sequence KITTI-17: 0.5568801496566254
+Number of images processed: 145
+Average SSIM in sequence ETH-Bahnhof: 0.6477182605139518
+Number of images processed: 1000
+Average SSIM in sequence ETH-Sunnyday: 0.691567365242705
+Number of images processed: 354
+Average SSIM in sequence PETS09-S2L1: 0.6526217005789783
+Number of images processed: 795
+Average SSIM in sequence TUD-Campus: 0.5706534719096901
+Number of images processed: 71
+Average SSIM in sequence TUD-Stadtmitte: 0.6219959069730551
+Number of images processed: 179
+Average SSIM in sequence ADL-Rundle-6: 0.7310682824294203
+Number of images processed: 525
+Average SSIM in sequence ADL-Rundle-8: 0.8495781201398712
+Number of images processed: 654
+Average SSIM in sequence ETH-Pedcross2: 0.7298840147802625
+Number of images processed: 837
+Overall SSIM: 0.6973033087407756

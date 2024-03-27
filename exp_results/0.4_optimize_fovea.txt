@@ -12,3 +12,28 @@ ADL-Rundle-6   61.4% 76.3% 51.4% 65.2%  96.9%  24  8  15   1  104  1741  20   13
 ADL-Rundle-8   57.2% 86.1% 42.9% 46.9%  94.2%  28  8  11   9  195  3596  18   318 43.8% 0.205   7  12   3
 ETH-Pedcross2  28.6% 73.3% 17.8% 24.1%  99.3% 143  1  30 112    9  4322  44   225 23.2% 0.206  19  36  12
 OVERALL        48.8% 75.6% 36.1% 45.2%  94.7% 548 50 192 306 1001 21612 205  1493 42.1% 0.198 109 145  61
+
+
+Average SSIM in sequence Venice-2: 0.7342430894329851
+Number of images processed: 600
+Average SSIM in sequence KITTI-13: 0.6461746615536981
+Number of images processed: 340
+Average SSIM in sequence KITTI-17: 0.5863862545621025
+Number of images processed: 145
+Average SSIM in sequence ETH-Bahnhof: 0.6752718106344863
+Number of images processed: 1000
+Average SSIM in sequence ETH-Sunnyday: 0.7150263158819948
+Number of images processed: 354
+Average SSIM in sequence PETS09-S2L1: 0.6726383369944746
+Number of images processed: 795
+Average SSIM in sequence TUD-Campus: 0.5960125156660312
+Number of images processed: 71
+Average SSIM in sequence TUD-Stadtmitte: 0.6426521979856568
+Number of images processed: 179
+Average SSIM in sequence ADL-Rundle-6: 0.7496369416667682
+Number of images processed: 525
+Average SSIM in sequence ADL-Rundle-8: 0.861088219985536
+Number of images processed: 654
+Average SSIM in sequence ETH-Pedcross2: 0.7518378304812043
+Number of images processed: 837
+Overall SSIM: 0.7185019702321737
